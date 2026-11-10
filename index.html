@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f4e79">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Minhas Pendências</title>
+<style>
+  :root{
+    --azul:#1f4e79; --azul2:#2d6aa3; --fundo:#f2f4f7; --card:#fff; --txt:#1b1f24; --sub:#5f6b7a;
+    --borda:#dde2e8; --urg:#d93025; --normal:#2d6aa3; --baixa:#9aa5b1; --ok:#1e8e3e; --late:#b3261e;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fundo);color:var(--txt);font-size:16px}
+  header{background:var(--azul);color:#fff;padding:14px 16px 10px;padding-top:calc(14px + env(safe-area-inset-top));position:sticky;top:0;z-index:5}
+  header .row{display:flex;align-items:center;justify-content:space-between;max-width:640px;margin:0 auto}
+  header h1{font-size:19px;margin:0;font-weight:650}
+  header small{display:block;opacity:.8;font-size:13px;margin-top:2px}
+  header button{background:rgba(255,255,255,.15);border:0;color:#fff;font-size:20px;width:40px;height:40px;border-radius:10px}
+  nav{display:flex;max-width:640px;margin:10px auto 0;gap:4px}
+  nav button{flex:1;background:transparent;border:0;color:#fff;opacity:.7;padding:8px 2px;font-size:14px;font-weight:600;border-bottom:3px solid transparent}
+  nav button.on{opacity:1;border-bottom-color:#fff}
+  main{max-width:640px;margin:0 auto;padding:12px 12px 110px}
+  h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);margin:18px 4px 8px;display:flex;align-items:center;gap:8px}
+  h2 span{background:#e3e8ee;color:var(--sub);border-radius:10px;padding:1px 8px;font-size:12px}
+  h2.late{color:var(--late)}
+  .card{background:var(--card);border-radius:12px;margin-bottom:8px;display:flex;align-items:stretch;box-shadow:0 1px 2px rgba(0,0,0,.06);border-left:5px solid var(--normal);overflow:hidden}
+  .card.p-urgente{border-left-color:var(--urg)}
+  .card.p-baixa{border-left-color:var(--baixa)}
+  .card.done{opacity:.6}
+  .card.done .tt{text-decoration:line-through}
+  .chk{flex:0 0 52px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--ok);font-weight:700}
+  .chk::before{content:"";position:absolute}
+  .chk span{width:24px;height:24px;border:2px solid #b8c1cc;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .card.done .chk span{background:var(--ok);border-color:var(--ok);color:#fff;font-size:14px}
+  .body{flex:1;padding:11px 12px 11px 0;min-width:0}
+  .tt{font-weight:600;line-height:1.3;word-wrap:break-word}
+  .meta{color:var(--sub);font-size:14px;margin-top:3px}
+  .meta b{color:var(--txt);font-weight:600}
+  .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .tag{font-size:12px;background:#eef1f5;color:var(--sub);padding:2px 8px;border-radius:8px}
+  .tag.urg{background:#fde7e6;color:var(--urg);font-weight:600}
+  .tag.late{background:#fde7e6;color:var(--late);font-weight:600}
+  .tag.hoje{background:#e6f0fa;color:var(--azul);font-weight:600}
+  .resumo{display:flex;gap:8px;margin:4px 0 6px}
+  .resumo div{flex:1;background:#fff;border-radius:12px;padding:10px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .resumo b{display:block;font-size:22px}
+  .resumo small{color:var(--sub);font-size:12px}
+  .resumo .r-late b{color:var(--late)} .resumo .r-urg b{color:var(--urg)}
+  .vazio{text-align:center;color:var(--sub);padding:50px 20px;line-height:1.5}
+  .vazio big{font-size:42px;display:block;margin-bottom:6px}
+  .aviso{background:#fff4e0;border:1px solid #f3d39a;color:#7a4b00;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+  .aviso button{margin-left:auto;white-space:nowrap}
+  .fab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:62px;height:62px;border-radius:50%;background:var(--azul);color:#fff;font-size:34px;border:0;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:4;line-height:1}
+  input,select,textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--borda);border-radius:10px;background:#fff;color:var(--txt)}
+  textarea{min-height:90px;resize:vertical}
+  label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin:12px 0 5px}
+  .btn{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:600;background:#e8edf3;color:var(--txt)}
+  .btn.pri{background:var(--azul);color:#fff}
+  .btn.ok{background:var(--ok);color:#fff}
+  .btn.wa{background:#25d366;color:#fff}
+  .btn.del{background:#fde7e6;color:var(--urg)}
+  .btn.sm{padding:7px 10px;font-size:14px}
+  .seg{display:flex;gap:6px}
+  .seg button{flex:1;border:1px solid var(--borda);background:#fff;border-radius:10px;padding:10px 4px;font:inherit;font-size:14px;font-weight:600;color:var(--sub)}
+  .seg button.on[data-v=urgente]{background:var(--urg);border-color:var(--urg);color:#fff}
+  .seg button.on[data-v=normal]{background:var(--normal);border-color:var(--normal);color:#fff}
+  .seg button.on[data-v=baixa]{background:var(--baixa);border-color:var(--baixa);color:#fff}
+  .quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+  .quick button{border:1px solid var(--borda);background:#fff;border-radius:16px;padding:5px 11px;font:inherit;font-size:13px;color:var(--azul)}
+  .filtros{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+  .filtros select{padding:9px 8px;font-size:14px}
+  .cli{background:#fff;border-radius:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);overflow:hidden}
+  .cli-h{display:flex;align-items:center;padding:13px 14px;gap:10px}
+  .cli-h .n{flex:1;font-weight:600}
+  .cli-h .c{background:#e6f0fa;color:var(--azul);border-radius:10px;padding:2px 9px;font-size:13px;font-weight:600}
+  .cli-h .u{background:#fde7e6;color:var(--urg);border-radius:10px;padding:2px 9px;font-size:13px;font-weight:600}
+  .cli-b{padding:0 10px 10px;background:#f7f9fb;border-top:1px solid var(--borda)}
+  .cli-b .acoes{display:flex;gap:6px;padding:10px 0 8px;flex-wrap:wrap}
+  dialog{border:0;padding:0;width:100%;max-width:640px;max-height:92vh;border-radius:18px 18px 0 0;margin:auto auto 0;background:#fff}
+  dialog::backdrop{background:rgba(0,0,0,.4)}
+  .dlg{padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  .dlg h3{margin:0 0 4px;font-size:18px}
+  .dlg-acoes{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+  .dlg-acoes .btn{flex:1;min-width:120px}
+  .det-campo{margin-top:12px}
+  .det-campo small{display:block;color:var(--sub);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .det-campo div{margin-top:2px;white-space:pre-wrap;word-wrap:break-word}
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.on{opacity:1}
+  .hint{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.4}
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div><h1>Minhas Pendências</h1><small id="hoje"></small></div>
+    <button id="btnMenu" aria-label="Menu">⋮</button>
+  </div>
+  <nav>
+    <button data-tab="agenda" class="on">Agenda</button>
+    <button data-tab="clientes">Clientes</button>
+    <button data-tab="buscar">Buscar</button>
+    <button data-tab="feitas">Concluídas</button>
+  </nav>
+</header>
+
+<main id="view"></main>
+<button class="fab" id="btnNovo" aria-label="Nova pendência">+</button>
+
+<!-- Formulário -->
+<dialog id="dlgForm">
+  <form class="dlg" id="form" method="dialog">
+    <h3 id="formTitulo">Nova pendência</h3>
+    <label for="fTitulo">O que precisa ser feito? *</label>
+    <input id="fTitulo" required maxlength="140" placeholder="Ex.: Levar lâmina nova">
+    <label for="fCliente">Cliente</label>
+    <input id="fCliente" list="lstClientes" autocomplete="off" placeholder="Nome do cliente">
+    <datalist id="lstClientes"></datalist>
+    <label for="fMaquina">Máquina / modelo</label>
+    <input id="fMaquina" list="lstMaquinas" autocomplete="off" placeholder="Ex.: Gerber GT7250">
+    <datalist id="lstMaquinas"></datalist>
+    <label>Prioridade</label>
+    <div class="seg" id="fPrio">
+      <button type="button" data-v="urgente">Urgente</button>
+      <button type="button" data-v="normal">Normal</button>
+      <button type="button" data-v="baixa">Baixa</button>
+    </div>
+    <label for="fData">Prazo</label>
+    <input type="date" id="fData">
+    <div class="quick" id="fDataQuick">
+      <button type="button" data-d="0">Hoje</button>
+      <button type="button" data-d="1">Amanhã</button>
+      <button type="button" data-d="sex">Sexta</button>
+      <button type="button" data-d="seg">Próx. segunda</button>
+      <button type="button" data-d="">Sem data</button>
+    </div>
+    <label for="fTipo">Tipo</label>
+    <select id="fTipo">
+      <option value="">—</option>
+      <option>Levar peça</option>
+      <option>Retornar contato</option>
+      <option>Orçamento</option>
+      <option>Verificar / testar</option>
+      <option>Visita</option>
+      <option>Treinamento</option>
+      <option>Outro</option>
+    </select>
+    <label for="fRelato">Breve relato</label>
+    <textarea id="fRelato" placeholder="O que aconteceu, combinado com o cliente, detalhes…"></textarea>
+    <div class="dlg-acoes">
+      <button type="button" class="btn" id="btnCancelar">Cancelar</button>
+      <button type="submit" class="btn pri">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Detalhe -->
+<dialog id="dlgDet"><div class="dlg" id="det"></div></dialog>
+
+<!-- Menu / backup -->
+<dialog id="dlgMenu">
+  <div class="dlg">
+    <h3>Backup dos dados</h3>
+    <p class="hint">Os dados ficam só neste celular. Exporte um backup de vez em quando (salve no Drive, WhatsApp, e-mail…). Se trocar de celular, é só importar o arquivo.</p>
+    <p class="hint" id="infoBackup"></p>
+    <div class="dlg-acoes">
+      <button class="btn pri" id="btnExportar">⬇️ Exportar backup</button>
+      <button class="btn" id="btnImportar">⬆️ Importar backup</button>
+    </div>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+    <div class="dlg-acoes"><button class="btn" id="btnFecharMenu">Fechar</button></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= Dados ================= */
+const KEY = 'pendencias_v1';
+let db = carregar();
+function carregar(){
+  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d && Array.isArray(d.items)) return d; }catch(e){}
+  return { items: [], lastBackup: null };
+}
+function salvar(){ localStorage.setItem(KEY, JSON.stringify(db)); }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ================= Datas ================= */
+const DIAS = ['dom','seg','ter','qua','qui','sex','sáb'];
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const p2 = n => String(n).padStart(2,'0');
+const iso = d => `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const hojeISO = () => iso(new Date());
+const addDias = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const fmtBR = s => { const d = parse(s); return `${p2(d.getDate())}/${p2(d.getMonth()+1)}`; };
+const fmtCompleto = s => { const d = parse(s); return `${DIAS[d.getDay()]}, ${p2(d.getDate())}/${p2(d.getMonth()+1)}/${d.getFullYear()}`; };
+function limitesSemana(){
+  const t = parse(hojeISO());
+  const dow = (t.getDay()+6)%7;            // 0 = segunda
+  const seg = addDias(t,-dow);
+  return { dom: iso(addDias(seg,6)), proxDom: iso(addDias(seg,13)) };
+}
+function grupo(it){
+  if(!it.data) return 'sem';
+  const t = hojeISO();
+  if(it.data < t) return 'atrasadas';
+  if(it.data === t) return 'hoje';
+  const w = limitesSemana();
+  if(it.data <= w.dom) return 'semana';
+  if(it.data <= w.proxDom) return 'proxima';
+  return 'depois';
+}
+function rotuloData(s){
+  if(!s) return '';
+  const diff = Math.round((parse(s) - parse(hojeISO()))/86400000);
+  if(diff === 0) return 'Hoje';
+  if(diff === 1) return 'Amanhã';
+  if(diff === -1) return 'Ontem';
+  if(diff < 0) return `${-diff} dias atrasada`;
+  return `${DIAS[parse(s).getDay()]} ${fmtBR(s)}`;
+}
+
+/* ================= Utilidades ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+const PRIO = { urgente:0, normal:1, baixa:2 };
+const porData = (a,b) => (a.data||'9999') .localeCompare(b.data||'9999') || PRIO[a.prio]-PRIO[b.prio] || a.criadoEm.localeCompare(b.criadoEm);
+const porPrio = (a,b) => PRIO[a.prio]-PRIO[b.prio] || (a.data||'9999').localeCompare(b.data||'9999') || a.criadoEm.localeCompare(b.criadoEm);
+const abertas = () => db.items.filter(i => i.status !== 'feita');
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('on'), 2200); }
+
+/* ================= Cartão ================= */
+function cartao(it){
+  const feita = it.status === 'feita';
+  const g = grupo(it);
+  let tagData = '';
+  if(it.data){
+    const cls = !feita && g==='atrasadas' ? 'late' : (!feita && g==='hoje' ? 'hoje' : '');
+    tagData = `<span class="tag ${cls}">📅 ${feita ? fmtBR(it.data) : rotuloData(it.data)}</span>`;
+  }
+  return `<div class="card p-${it.prio} ${feita?'done':''}">
+    <button class="chk" data-act="toggle" data-id="${it.id}" aria-label="${feita?'Reabrir':'Concluir'}"><span>${feita?'✓':''}</span></button>
+    <div class="body" data-act="abrir" data-id="${it.id}">
+      <div class="tt">${esc(it.titulo)}</div>
+      ${(it.cliente||it.maquina) ? `<div class="meta">${it.cliente?`<b>${esc(it.cliente)}</b>`:''}${it.cliente&&it.maquina?' · ':''}${esc(it.maquina)}</div>` : ''}
+      <div class="tags">
+        ${it.prio==='urgente' && !feita ? '<span class="tag urg">Urgente</span>' : ''}
+        ${tagData}
+        ${it.tipo ? `<span class="tag">${esc(it.tipo)}</span>` : ''}
+        ${it.relato ? '<span class="tag">📝</span>' : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ================= Telas ================= */
+let aba = 'agenda';
+let cliAberto = null;
+
+function render(){
+  $('#hoje').textContent = (()=>{ const d=new Date(); return `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`; })();
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === aba));
+  ({ agenda: telaAgenda, clientes: telaClientes, buscar: telaBuscar, feitas: telaFeitas })[aba]();
+}
+
+function avisoBackup(){
+  if(!db.items.length) return '';
+  const dias = db.lastBackup ? Math.round((parse(hojeISO()) - parse(db.lastBackup))/86400000) : null;
+  if(dias !== null && dias < 14) return '';
+  return `<div class="aviso">💾 ${dias===null ? 'Você ainda não fez backup.' : `Último backup há ${dias} dias.`}<button class="btn sm" data-act="menu">Fazer agora</button></div>`;
+}
+
+function telaAgenda(){
+  const ab = abertas();
+  if(!ab.length){
+    $('#view').innerHTML = avisoBackup() + `<div class="vazio"><big>✅</big>Nada pendente!<br>Toque no <b>+</b> para anotar algo.</div>`;
+    return;
+  }
+  const nAtras = ab.filter(i => grupo(i)==='atrasadas').length;
+  const nHoje = ab.filter(i => grupo(i)==='hoje').length;
+  const nUrg = ab.filter(i => i.prio==='urgente').length;
+  let h = avisoBackup() + `<div class="resumo">
+    <div class="r-late"><b>${nAtras}</b><small>Atrasadas</small></div>
+    <div><b>${nHoje}</b><small>Para hoje</small></div>
+    <div class="r-urg"><b>${nUrg}</b><small>Urgentes</small></div>
+  </div>`;
+  const GRUPOS = [['atrasadas','⚠️ Atrasadas'],['hoje','Hoje'],['semana','Esta semana'],['proxima','Próxima semana'],['depois','Mais pra frente'],['sem','Sem data']];
+  for(const [g,rot] of GRUPOS){
+    const lista = ab.filter(i => grupo(i)===g).sort(g==='sem' ? porPrio : porData);
+    if(lista.length) h += `<h2 class="${g==='atrasadas'?'late':''}">${rot} <span>${lista.length}</span></h2>` + lista.map(cartao).join('');
+  }
+  $('#view').innerHTML = h;
+}
+
+function mapaClientes(){
+  const m = new Map();
+  for(const it of abertas()){
+    if(!it.cliente) continue;
+    const k = norm(it.cliente);
+    if(!m.has(k)) m.set(k, { nome: it.cliente, itens: [] });
+    m.get(k).itens.push(it);
+  }
+  return m;
+}
+
+function telaClientes(){
+  $('#view').innerHTML = `<input id="qCli" type="search" placeholder="🔎 Buscar cliente…" autocomplete="off"><div id="resCli"></div>`;
+  $('#qCli').addEventListener('input', listaClientes);
+  listaClientes();
+}
+function listaClientes(){
+  const q = norm($('#qCli')?.value);
+  const m = mapaClientes();
+  let cs = [...m.entries()].filter(([k]) => !q || k.includes(q))
+    .sort((a,b) => a[1].nome.localeCompare(b[1].nome, 'pt-BR'));
+  const semCli = abertas().filter(i => !i.cliente).length;
+  if(!cs.length){
+    $('#resCli').innerHTML = `<div class="vazio"><big>🏭</big>${q ? 'Nenhum cliente com pendência aberta encontrado.' : 'Nenhuma pendência aberta com cliente.'}</div>`;
+    return;
+  }
+  $('#resCli').innerHTML = `<h2>Clientes com pendências <span>${cs.length}</span></h2>` + cs.map(([k,c]) => {
+    const urg = c.itens.filter(i => i.prio==='urgente').length;
+    const open = cliAberto === k;
+    return `<div class="cli">
+      <div class="cli-h" data-act="cli" data-k="${esc(k)}">
+        <div class="n">${esc(c.nome)}</div>
+        ${urg ? `<span class="u">${urg} urg.</span>` : ''}
+        <span class="c">${c.itens.length}</span>
+        <span>${open ? '▲' : '▼'}</span>
+      </div>
+      ${open ? `<div class="cli-b">
+        <div class="acoes">
+          <button class="btn wa sm" data-act="waCli" data-k="${esc(k)}">📤 Enviar tudo ao técnico</button>
+          <button class="btn sm" data-act="novoCli" data-k="${esc(k)}">+ Nova para este cliente</button>
+        </div>
+        ${c.itens.sort(porPrio).map(cartao).join('')}
+      </div>` : ''}
+    </div>`;
+  }).join('') + (semCli && !q ? `<p class="hint" style="text-align:center">${semCli} pendência(s) aberta(s) sem cliente.</p>` : '');
+}
+
+let filtro = { q:'', prio:'', tipo:'', status:'abertas' };
+function telaBuscar(){
+  const tipos = [...new Set(db.items.map(i => i.tipo).filter(Boolean))].sort();
+  $('#view').innerHTML = `
+    <input id="qBusca" type="search" placeholder="🔎 Cliente, máquina, peça, relato…" autocomplete="off" value="${esc(filtro.q)}">
+    <div class="filtros">
+      <select id="fbPrio"><option value="">Prioridade</option><option value="urgente">Urgente</option><option value="normal">Normal</option><option value="baixa">Baixa</option></select>
+      <select id="fbTipo"><option value="">Tipo</option>${tipos.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
+      <select id="fbStatus"><option value="abertas">Abertas</option><option value="feitas">Concluídas</option><option value="todas">Todas</option></select>
+    </div>
+    <div id="resBusca"></div>`;
+  $('#fbPrio').value = filtro.prio; $('#fbTipo').value = filtro.tipo; $('#fbStatus').value = filtro.status;
+  const upd = () => { filtro = { q: $('#qBusca').value, prio: $('#fbPrio').value, tipo: $('#fbTipo').value, status: $('#fbStatus').value }; listaBusca(); };
+  ['#qBusca','#fbPrio','#fbTipo','#fbStatus'].forEach(s => $(s).addEventListener('input', upd));
+  listaBusca();
+}
+function listaBusca(){
+  const termos = norm(filtro.q).split(/\s+/).filter(Boolean);
+  const res = db.items.filter(it => {
+    if(filtro.status==='abertas' && it.status==='feita') return false;
+    if(filtro.status==='feitas' && it.status!=='feita') return false;
+    if(filtro.prio && it.prio !== filtro.prio) return false;
+    if(filtro.tipo && it.tipo !== filtro.tipo) return false;
+    if(termos.length){
+      const alvo = norm([it.titulo, it.cliente, it.maquina, it.relato, it.tipo].join(' '));
+      if(!termos.every(t => alvo.includes(t))) return false;
+    }
+    return true;
+  }).sort(porPrio);
+  $('#resBusca').innerHTML = res.length
+    ? `<h2>Resultados <span>${res.length}</span></h2>` + res.map(cartao).join('')
+    : `<div class="vazio"><big>🔍</big>Nada encontrado.</div>`;
+}
+
+function telaFeitas(){
+  const fs = db.items.filter(i => i.status==='feita').sort((a,b) => (b.feitaEm||'').localeCompare(a.feitaEm||''));
+  $('#view').innerHTML = fs.length
+    ? `<h2>Concluídas <span>${fs.length}</span></h2>` + fs.map(cartao).join('') + `<p class="hint" style="text-align:center">Toque no ✓ para reabrir.</p>`
+    : `<div class="vazio"><big>📋</big>Nenhuma pendência concluída ainda.</div>`;
+}
+
+/* ================= Formulário ================= */
+let editId = null;
+function setPrio(v){ document.querySelectorAll('#fPrio button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); $('#fPrio').dataset.v = v; }
+function preencherListas(){
+  const cl = [...new Map(db.items.filter(i=>i.cliente).map(i => [norm(i.cliente), i.cliente])).values()].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const mq = [...new Map(db.items.filter(i=>i.maquina).map(i => [norm(i.maquina), i.maquina])).values()].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  $('#lstClientes').innerHTML = cl.map(c => `<option value="${esc(c)}">`).join('');
+  $('#lstMaquinas').innerHTML = mq.map(c => `<option value="${esc(c)}">`).join('');
+}
+function abrirForm(it = null, cliente = ''){
+  editId = it ? it.id : null;
+  preencherListas();
+  $('#formTitulo').textContent = it ? 'Editar pendência' : 'Nova pendência';
+  $('#fTitulo').value = it?.titulo || '';
+  $('#fCliente').value = it?.cliente || cliente;
+  $('#fMaquina').value = it?.maquina || '';
+  $('#fData').value = it?.data || '';
+  $('#fTipo').value = it?.tipo || '';
+  $('#fRelato').value = it?.relato || '';
+  setPrio(it?.prio || 'normal');
+  $('#dlgForm').showModal();
+  if(!it) setTimeout(() => $('#fTitulo').focus(), 50);
+}
+document.querySelectorAll('#fPrio button').forEach(b => b.onclick = () => setPrio(b.dataset.v));
+document.querySelectorAll('#fDataQuick button').forEach(b => b.onclick = () => {
+  const v = b.dataset.d, t = parse(hojeISO());
+  if(v === '') { $('#fData').value = ''; return; }
+  let d;
+  if(v === 'sex'){ const dow = t.getDay(); d = addDias(t, ((5 - dow) + 7) % 7 || 7); if(dow===5) d = t; }
+  else if(v === 'seg'){ const dow = t.getDay(); d = addDias(t, ((1 - dow) + 7) % 7 || 7); }
+  else d = addDias(t, Number(v));
+  $('#fData').value = iso(d);
+});
+$('#btnCancelar').onclick = () => $('#dlgForm').close();
+$('#form').addEventListener('submit', e => {
+  e.preventDefault();
+  const titulo = $('#fTitulo').value.trim();
+  if(!titulo){ $('#fTitulo').focus(); return; }
+  const agora = new Date().toISOString();
+  const dados = {
+    titulo,
+    cliente: $('#fCliente').value.trim(),
+    maquina: $('#fMaquina').value.trim(),
+    prio: $('#fPrio').dataset.v || 'normal',
+    data: $('#fData').value || '',
+    tipo: $('#fTipo').value,
+    relato: $('#fRelato').value.trim(),
+    atualizadoEm: agora
+  };
+  if(editId){
+    Object.assign(db.items.find(i => i.id === editId), dados);
+    toast('Pendência atualizada');
+  } else {
+    db.items.push({ id: uid(), status: 'aberta', criadoEm: agora, feitaEm: null, ...dados });
+    toast('Pendência salva');
+  }
+  salvar();
+  $('#dlgForm').close();
+  render();
+});
+
+/* ================= Detalhe ================= */
+function abrirDet(id){
+  const it = db.items.find(i => i.id === id); if(!it) return;
+  const feita = it.status === 'feita';
+  const campo = (rot, val) => val ? `<div class="det-campo"><small>${rot}</small><div>${esc(val)}</div></div>` : '';
+  const prioTxt = { urgente:'🔴 Urgente', normal:'🔵 Normal', baixa:'⚪ Baixa' }[it.prio];
+  $('#det').innerHTML = `
+    <h3>${esc(it.titulo)}</h3>
+    ${campo('Cliente', it.cliente)}
+    ${campo('Máquina / modelo', it.maquina)}
+    ${campo('Prioridade', prioTxt)}
+    ${campo('Prazo', it.data ? fmtCompleto(it.data) + (feita ? '' : ` (${rotuloData(it.data)})`) : '')}
+    ${campo('Tipo', it.tipo)}
+    ${campo('Relato', it.relato)}
+    ${campo('Criada em', new Date(it.criadoEm).toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'}))}
+    ${feita && it.feitaEm ? campo('Concluída em', new Date(it.feitaEm).toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'})) : ''}
+    <div class="dlg-acoes">
+      <button class="btn ${feita?'':'ok'}" data-act="toggle" data-id="${it.id}">${feita ? '↩️ Reabrir' : '✓ Concluir'}</button>
+      <button class="btn" data-act="editar" data-id="${it.id}">✏️ Editar</button>
+    </div>
+    <div class="dlg-acoes">
+      <button class="btn wa" data-act="wa" data-id="${it.id}">📤 WhatsApp</button>
+      <button class="btn" data-act="copiar" data-id="${it.id}">📋 Copiar texto</button>
+    </div>
+    <div class="dlg-acoes">
+      <button class="btn del" data-act="excluir" data-id="${it.id}">🗑️ Excluir</button>
+      <button class="btn" data-act="fecharDet">Fechar</button>
+    </div>`;
+  if(!$('#dlgDet').open) $('#dlgDet').showModal();
+}
+
+/* ================= WhatsApp ================= */
+function textoItem(it, comCliente = true){
+  let t = '';
+  if(it.prio === 'urgente') t += '⚠️ *URGENTE*\n';
+  if(comCliente && it.cliente) t += `*Cliente:* ${it.cliente}\n`;
+  if(it.maquina) t += `*Máquina:* ${it.maquina}\n`;
+  t += `*O que fazer:* ${it.titulo}\n`;
+  if(it.tipo) t += `*Tipo:* ${it.tipo}\n`;
+  if(it.relato) t += `*Detalhes:* ${it.relato}\n`;
+  if(it.data) t += `*Prazo:* ${fmtCompleto(it.data)}\n`;
+  return t.trim();
+}
+function textoCliente(c){
+  const itens = c.itens.slice().sort(porPrio);
+  return `*Pendências – ${c.nome}*\nJá que você vai passar lá, se puder verificar:\n\n` +
+    itens.map((it,i) => `*${i+1}.* ` + textoItem(it, false)).join('\n\n');
+}
+function enviarWhats(texto){ window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank'); }
+async function copiar(texto){
+  try{ await navigator.clipboard.writeText(texto); toast('Texto copiado'); }
+  catch(e){ prompt('Copie o texto:', texto); }
+}
+
+/* ================= Ações (cliques) ================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if(!el) return;
+  const id = el.dataset.id, act = el.dataset.act;
+  const it = id ? db.items.find(i => i.id === id) : null;
+  switch(act){
+    case 'toggle':
+      if(!it) return;
+      if(it.status === 'feita'){ it.status = 'aberta'; it.feitaEm = null; toast('Pendência reaberta'); }
+      else { it.status = 'feita'; it.feitaEm = new Date().toISOString(); toast('✓ Concluída'); }
+      it.atualizadoEm = new Date().toISOString();
+      salvar(); render();
+      if($('#dlgDet').open) abrirDet(id);
+      break;
+    case 'abrir': abrirDet(id); break;
+    case 'editar': $('#dlgDet').close(); abrirForm(it); break;
+    case 'excluir':
+      if(it && confirm('Excluir esta pendência? Não dá para desfazer.')){
+        db.items = db.items.filter(i => i.id !== id); salvar(); $('#dlgDet').close(); render(); toast('Excluída');
+      }
+      break;
+    case 'fecharDet': $('#dlgDet').close(); break;
+    case 'wa': enviarWhats(textoItem(it)); break;
+    case 'copiar': copiar(textoItem(it)); break;
+    case 'cli': cliAberto = cliAberto === el.dataset.k ? null : el.dataset.k; listaClientes(); break;
+    case 'waCli': { const c = mapaClientes().get(el.dataset.k); if(c) enviarWhats(textoCliente(c)); break; }
+    case 'novoCli': { const c = mapaClientes().get(el.dataset.k); abrirForm(null, c ? c.nome : ''); break; }
+    case 'menu': abrirMenu(); break;
+  }
+});
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => { aba = b.dataset.tab; render(); window.scrollTo(0,0); });
+$('#btnNovo').onclick = () => abrirForm();
+
+/* fechar diálogos tocando fora */
+document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if(e.target === d) d.close(); }));
+
+/* ================= Backup ================= */
+function abrirMenu(){
+  const n = db.items.length, ab = abertas().length;
+  $('#infoBackup').textContent = `${n} pendência(s) salvas (${ab} aberta(s)). ` +
+    (db.lastBackup ? `Último backup: ${fmtBR(db.lastBackup)}/${db.lastBackup.slice(0,4)}.` : 'Nenhum backup feito ainda.');
+  $('#dlgMenu').showModal();
+}
+$('#btnMenu').onclick = abrirMenu;
+$('#btnFecharMenu').onclick = () => $('#dlgMenu').close();
+$('#btnExportar').onclick = () => {
+  const conteudo = JSON.stringify({ app: 'minhas-pendencias', versao: 1, exportadoEm: new Date().toISOString(), items: db.items }, null, 2);
+  const blob = new Blob([conteudo], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pendencias-backup-${hojeISO()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  db.lastBackup = hojeISO(); salvar();
+  $('#dlgMenu').close(); render(); toast('Backup exportado');
+};
+$('#btnImportar').onclick = () => $('#fileImport').click();
+$('#fileImport').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if(!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    if(!d || !Array.isArray(d.items)) throw new Error('formato');
+    const atual = new Map(db.items.map(i => [i.id, i]));
+    let novos = 0, atualizados = 0;
+    for(const it of d.items){
+      if(!it || !it.id || !it.titulo) continue;
+      const ex = atual.get(it.id);
+      if(!ex){ atual.set(it.id, it); novos++; }
+      else if((it.atualizadoEm||'') > (ex.atualizadoEm||'')){ atual.set(it.id, it); atualizados++; }
+    }
+    db.items = [...atual.values()];
+    salvar(); $('#dlgMenu').close(); render();
+    alert(`Backup importado!\n${novos} nova(s), ${atualizados} atualizada(s).`);
+  }catch(err){
+    alert('Não consegui ler esse arquivo. Confira se é um backup deste app.');
+  }
+};
+
+/* ================= Início ================= */
+document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
+render();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
